@@ -1,0 +1,1 @@
+sudo mv /tmp/nginx-access.log ~/logs/nginx/access.log.`date +%Y-%m-%d_%H-%M-%S` && sudo kill -USR1 `cat /var/run/nginx.pid`

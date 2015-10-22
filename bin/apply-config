@@ -1,0 +1,15 @@
+#!/bin/bash		
+shopt -s expand_aliases		
+source ~/.bashrc		
+		
+sudo service nginx stop		
+#sudo mv /tmp/nginx-access.log /tmp/nginx-access-$(date '+%F-%T').log		
+sudo systemctl stop isuxi.go		
+#sudo rm -f /tmp/go.sock		
+sudo systemctl start isuxi.go		
+#sudo chmod 777 /tmp/go.sock		
+sudo service nginx start		
+sudo service mysql restart		
+		
+msql -e 'show variables like "query_cache%";'		
+msql -e 'show variables like "thread_cache%";'
