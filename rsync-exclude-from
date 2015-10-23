@@ -1,0 +1,19 @@
+# copy from .gitignore
+java/*
+perl/*
+php/*
+python/*
+ruby/*
+scala/*
+
+go/app
+.swo
+*.swp
+go/pkg/
+go/src/
+
+.idea
+*.iml
+
+# add
+.git/*

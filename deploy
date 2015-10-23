@@ -1,0 +1,22 @@
+#!/bin/sh
+dir=$(cd $(dirname ${BASH_SOURCE:-$0}); pwd)
+echo "dir: $dir"
+
+ssh_host="isucon5q-retry"
+
+rsync -avzc --delete --exclude-from=rsync-exclude-from ${dir}/ ${ssh_host}:webapp
+
+ssh -t -t $ssh_host <<-EOS
+  cd /home/isucon/webapp/go
+  go build -o app
+
+  #sudo service nginx stop
+  #sudo systemctl stop isuxi.go
+  #sudo rm -f /run/sock-shared/isuxi.go.sock
+  #sudo systemctl start isuxi.go
+  #sudo chmod 777 /run/sock-shared/isuxi.go.sock
+  #sudo service nginx start
+  ##sudo service mysql restart
+
+  exit
+EOS
