@@ -16,8 +16,7 @@
 <div class="row panel panel-primary" id="entry-comments">
     {{ range .Comments }}
     <div class="comment">
-        {{ $commentUser := getUser .UserID }}
-        <div class="comment-owner"><a href="/profile/{{ $commentUser.AccountName }}">{{ $commentUser.NickName }}さん</a></div>
+        <div class="comment-owner"><a href="/profile/{{ .FromAccountName }}">{{ .FromNickName }}さん</a></div>
         <div class="comment-comment">
             {{ range (split .Comment "\n") }}
             {{ . }}<br />

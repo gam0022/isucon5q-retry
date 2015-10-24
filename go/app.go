@@ -86,14 +86,6 @@ type CommentFromTo struct {
 	ToNickName string
 }
 
-type Comment struct {
-	ID        int
-	EntryID   int
-	UserID    int
-	Comment   string
-	CreatedAt time.Time
-}
-
 type Friend struct {
 	AccountName string
 	NickName string
@@ -570,14 +562,16 @@ func GetEntry(w http.ResponseWriter, r *http.Request) {
 			checkErr(ErrPermissionDenied)
 		}
 	}
-	rows, err := db.Query(`SELECT * FROM comments WHERE entry_id = ?`, entry.ID)
+	rows, err := db.Query(`SELECT c.id, c.entry_id, c.user_id, c.comment, c.created_at, u.account_name, u.nick_name
+	FROM comments AS c LEFT JOIN users AS u ON (u.id = c.user_id)
+	WHERE entry_id = ?`, entry.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-	comments := make([]Comment, 0, 10)
+	comments := make([]CommentFrom, 0, 10)
 	for rows.Next() {
-		c := Comment{}
-		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt))
+		c := CommentFrom{}
+		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt, &c.FromAccountName, &c.FromNickName))
 		comments = append(comments, c)
 	}
 	rows.Close()
@@ -587,7 +581,7 @@ func GetEntry(w http.ResponseWriter, r *http.Request) {
 	render(w, r, http.StatusOK, "entry.html", struct {
 		Owner    *User
 		Entry    Entry
-		Comments []Comment
+		Comments []CommentFrom
 	}{owner, entry, comments})
 }
 
