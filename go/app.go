@@ -335,7 +335,7 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 		checkErr(err)
 	}
 
-	rows, err := db.Query(`SELECT id, user_id, private, title, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`, user.ID)
+	rows, err := db.Query(`SELECT id, user_id, private, title, created_at FROM entries WHERE user_id = ? ORDER BY id LIMIT 5`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -355,7 +355,7 @@ FROM comments c
 RIGHT JOIN entries e ON (c.entry_id = e.id)
 LEFT JOIN users AS u ON (c.user_id = u.id)
 WHERE e.user_id = ?
-ORDER BY c.created_at DESC
+ORDER BY c.id DESC
 LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
@@ -370,7 +370,7 @@ LIMIT 10`, user.ID)
 
 	rows, err = db.Query(`SELECT e.id, e.user_id, e.private, e.title, e.created_at, u.account_name, u.nick_name
 	FROM entries AS e LEFT JOIN users AS u ON (e.user_id = u.id)
-	WHERE EXISTS (SELECT * FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
+	WHERE EXISTS (SELECT * FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY e.id DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -391,7 +391,7 @@ LIMIT 10`, user.ID)
 	LEFT JOIN users AS uf ON (uf.id = c.user_id)
 	LEFT JOIN users AS ut ON (ut.id = e.user_id)
 	WHERE EXISTS (SELECT * FROM relations AS r WHERE (ONE = ? AND another = c.user_id) AND (e.private = 0 OR e.user_id = ? OR e.user_id = another))
-	ORDER BY created_at DESC LIMIT 10`, user.ID, user.ID)
+	ORDER BY c.id DESC LIMIT 10`, user.ID, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -450,9 +450,9 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	var query string
 	if permitted(w, r, owner.ID) {
-		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY id LIMIT 5`
 	} else {
-		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at LIMIT 5`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY id LIMIT 5`
 	}
 	rows, err := db.Query(query, owner.ID)
 	if err != sql.ErrNoRows {
@@ -513,9 +513,9 @@ func ListEntries(w http.ResponseWriter, r *http.Request) {
 	owner := getUserFromAccount(w, account)
 	var query string
 	if permitted(w, r, owner.ID) {
-		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY id DESC LIMIT 20`
 	} else {
-		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at DESC LIMIT 20`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY id DESC LIMIT 20`
 	}
 	rows, err := db.Query(query, owner.ID)
 	if err != sql.ErrNoRows {
