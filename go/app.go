@@ -56,8 +56,20 @@ type Entry2 struct {
 	Title     string
 	Content   string
 	CreatedAt time.Time
+
 	AccountName string
 	NickName string
+}
+
+type CommentFrom struct {
+	ID        int
+	EntryID   int
+	UserID    int
+	Comment   string
+	CreatedAt time.Time
+
+	FromAccountName string
+	FromNickName string
 }
 
 type Comment struct {
@@ -331,19 +343,21 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT c.id AS id, c.entry_id AS entry_id, c.user_id AS user_id, c.comment AS comment, c.created_at AS created_at
+	rows, err = db.Query(`SELECT c.id AS id, c.entry_id AS entry_id, c.user_id AS user_id, c.comment AS comment, c.created_at AS created_at,
+u.account_name, u.nick_name
 FROM comments c
 JOIN entries e ON c.entry_id = e.id
+LEFT JOIN users AS u ON (c.user_id = u.id)
 WHERE e.user_id = ?
 ORDER BY c.created_at DESC
 LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-	commentsForMe := make([]Comment, 0, 10)
+	commentsForMe := make([]CommentFrom, 0, 10)
 	for rows.Next() {
-		c := Comment{}
-		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt))
+		c := CommentFrom{}
+		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt, &c.FromAccountName, &c.FromNickName))
 		commentsForMe = append(commentsForMe, c)
 	}
 	rows.Close()
@@ -402,7 +416,7 @@ LIMIT 10`, user.ID)
 		User              User
 		Profile           Profile
 		Entries           []Entry
-		CommentsForMe     []Comment
+		CommentsForMe     []CommentFrom
 		EntriesOfFriends  []Entry2
 		CommentsOfFriends []Comment
 		FriendsCount      int
