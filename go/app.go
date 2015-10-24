@@ -265,7 +265,7 @@ func render(w http.ResponseWriter, r *http.Request, status int, file string, dat
 			return Entry{id, userID, private == 1, strings.SplitN(body, "\n", 2)[0], strings.SplitN(body, "\n", 2)[1], createdAt}
 		},
 		"numComments": func(id int) int {
-			row := db.QueryRow(`SELECT COUNT(*) AS c FROM comments WHERE entry_id = ?`, id)
+			row := db.QueryRow(`SELECT COUNT(id) AS c FROM comments WHERE entry_id = ?`, id)
 			var n int
 			checkErr(row.Scan(&n))
 			return n
