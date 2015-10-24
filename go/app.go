@@ -258,7 +258,7 @@ func render(w http.ResponseWriter, r *http.Request, status int, file string, dat
 		},
 		"split": strings.Split,
 		"getEntry": func(id int) Entry {
-			row := db.QueryRow(`SELECT * FROM entries WHERE id=?`, id)
+			row := db.QueryRow(`SELECT id, user_id, private, body, created_at FROM entries WHERE id=?`, id)
 			var entryID, userID, private int
 			var body string
 			var createdAt time.Time
@@ -310,7 +310,7 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 		checkErr(err)
 	}
 
-	rows, err := db.Query(`SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`, user.ID)
+	rows, err := db.Query(`SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -341,7 +341,7 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT * FROM entries ORDER BY created_at DESC LIMIT 1000`)
+	rows, err = db.Query(`SELECT id, user_id, private, body, created_at FROM entries ORDER BY created_at DESC LIMIT 1000`)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -372,7 +372,7 @@ LIMIT 10`, user.ID)
 		if !isFriend(w, r, c.UserID) {
 			continue
 		}
-		row := db.QueryRow(`SELECT * FROM entries WHERE id = ?`, c.EntryID)
+		row := db.QueryRow(`SELECT id, user_id, private, body, created_at FROM entries WHERE id = ?`, c.EntryID)
 		var id, userID, private int
 		var body string
 		var createdAt time.Time
@@ -440,9 +440,9 @@ func GetProfile(w http.ResponseWriter, r *http.Request) {
 	}
 	var query string
 	if permitted(w, r, owner.ID) {
-		query = `SELECT * FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`
 	} else {
-		query = `SELECT * FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at LIMIT 5`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at LIMIT 5`
 	}
 	rows, err := db.Query(query, owner.ID)
 	if err != sql.ErrNoRows {
@@ -503,9 +503,9 @@ func ListEntries(w http.ResponseWriter, r *http.Request) {
 	owner := getUserFromAccount(w, account)
 	var query string
 	if permitted(w, r, owner.ID) {
-		query = `SELECT * FROM entries WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at DESC LIMIT 20`
 	} else {
-		query = `SELECT * FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at DESC LIMIT 20`
+		query = `SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? AND private=0 ORDER BY created_at DESC LIMIT 20`
 	}
 	rows, err := db.Query(query, owner.ID)
 	if err != sql.ErrNoRows {
@@ -536,7 +536,7 @@ func GetEntry(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	entryID := mux.Vars(r)["entry_id"]
-	row := db.QueryRow(`SELECT * FROM entries WHERE id = ?`, entryID)
+	row := db.QueryRow(`SELECT id, user_id, private, body, created_at FROM entries WHERE id = ?`, entryID)
 	var id, userID, private int
 	var body string
 	var createdAt time.Time
@@ -601,7 +601,7 @@ func PostComment(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entryID := mux.Vars(r)["entry_id"]
-	row := db.QueryRow(`SELECT * FROM entries WHERE id = ?`, entryID)
+	row := db.QueryRow(`SELECT id, user_id, private, body, created_at FROM entries WHERE id = ?`, entryID)
 	var id, userID, private int
 	var body string
 	var createdAt time.Time
