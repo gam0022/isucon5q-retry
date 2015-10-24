@@ -644,13 +644,15 @@ func GetFootprints(w http.ResponseWriter, r *http.Request) {
 
 	user := getCurrentUser(w, r)
 	footprints := make([]Footprint, 0, 50)
-	rows, err := db.Query(`SELECT user_id, owner_id, created_at FROM footprints WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`, user.ID)
+	rows, err := db.Query(`SELECT f.user_id, f.owner_id, f.created_at, u.account_name, u.nick_name
+	FROM footprints AS f LEFT JOIN users AS u ON (u.id = f.owner_id)
+	WHERE user_id = ? ORDER BY created_at DESC LIMIT 50`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
 	for rows.Next() {
 		fp := Footprint{}
-		checkErr(rows.Scan(&fp.UserID, &fp.OwnerID, &fp.CreatedAt))
+		checkErr(rows.Scan(&fp.UserID, &fp.OwnerID, &fp.CreatedAt, &fp.AccountName, &fp.NickName))
 		footprints = append(footprints, fp)
 	}
 	rows.Close()
