@@ -72,6 +72,8 @@ type Footprint struct {
 	UserID    int
 	OwnerID   int
 	CreatedAt time.Time
+	AccountName string
+	NickName string
 }
 
 var prefs = []string{"未入力",
@@ -374,14 +376,16 @@ LIMIT 10`, user.ID)
 	row = db.QueryRow(`SELECT COUNT(id) FROM relations WHERE one = ?`, user.ID)
 	checkErr(row.Scan(&friendsCount))
 
-	rows, err = db.Query(`SELECT user_id, owner_id, created_at FROM footprints WHERE user_id = ? ORDER BY created_at DESC LIMIT 10`, user.ID)
+	rows, err = db.Query(`SELECT f.user_id, f.owner_id, f.created_at, u.account_name, u.nick_name
+	FROM footprints AS f LEFT JOIN users AS u ON (f.owner_id = u.id)
+	WHERE user_id = ? ORDER BY created_at DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
 	footprints := make([]Footprint, 0, 10)
 	for rows.Next() {
 		fp := Footprint{}
-		checkErr(rows.Scan(&fp.UserID, &fp.OwnerID, &fp.CreatedAt))
+		checkErr(rows.Scan(&fp.UserID, &fp.OwnerID, &fp.CreatedAt, &fp.AccountName, &fp.NickName))
 		footprints = append(footprints, fp)
 	}
 	rows.Close()
