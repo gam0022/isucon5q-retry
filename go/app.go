@@ -49,6 +49,17 @@ type Entry struct {
 	CreatedAt time.Time
 }
 
+type Entry2 struct {
+	ID        int
+	UserID    int
+	Private   bool
+	Title     string
+	Content   string
+	CreatedAt time.Time
+	AccountName string
+	NickName string
+}
+
 type Comment struct {
 	ID        int
 	EntryID   int
@@ -337,18 +348,20 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries AS e 
+	rows, err = db.Query(`SELECT e.id, e.user_id, e.private, e.title, e.created_at, u.account_name, u.nick_name
+	FROM entries AS e LEFT JOIN users AS u ON (e.user_id = u.id)
 	WHERE EXISTS (SELECT * FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-	entriesOfFriends := make([]Entry, 0, 10)
+	entriesOfFriends := make([]Entry2, 0, 10)
 	for rows.Next() {
 		var id, userID, private int
 		var title string
 		var createdAt time.Time
-		checkErr(rows.Scan(&id, &userID, &private, &title, &createdAt))
-		entriesOfFriends = append(entriesOfFriends, Entry{id, userID, private == 1, title, "", createdAt})
+		var accountName, nickName string
+		checkErr(rows.Scan(&id, &userID, &private, &title, &createdAt, &accountName, &nickName))
+		entriesOfFriends = append(entriesOfFriends, Entry2{id, userID, private == 1, title, "", createdAt, accountName, nickName})
 	}
 	rows.Close()
 
@@ -390,7 +403,7 @@ LIMIT 10`, user.ID)
 		Profile           Profile
 		Entries           []Entry
 		CommentsForMe     []Comment
-		EntriesOfFriends  []Entry
+		EntriesOfFriends  []Entry2
 		CommentsOfFriends []Comment
 		FriendsCount      int
 		Footprints        []Footprint
@@ -630,11 +643,10 @@ func GetFriends(w http.ResponseWriter, r *http.Request) {
 	}
 	friends := make([]Friend, 0)
 	for rows.Next() {
-		var nichName string
-		var accountName string
 		var createdAt time.Time
-		checkErr(rows.Scan(&accountName, &nichName, &createdAt))
-		friends = append(friends, Friend{ accountName, nichName, createdAt })
+		var accountName, nickName string
+		checkErr(rows.Scan(&accountName, &nickName, &createdAt))
+		friends = append(friends, Friend{ accountName, nickName, createdAt })
 	}
 	rows.Close()
 	render(w, r, http.StatusOK, "friends.html", struct{ Friends []Friend }{friends})
