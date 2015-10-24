@@ -357,7 +357,7 @@ LIMIT 10`, user.ID)
 
 	rows, err = db.Query(`SELECT c.id, c.entry_id, c.user_id, c.comment, c.created_at FROM comments AS c 
 	LEFT JOIN entries AS e ON (c.entry_id = e.id)
-	WHERE EXISTS (SELECT * FROM relations AS r WHERE ONE = ? AND another = c.user_id AND e.private = 0 OR (e.user_id = ? OR e.user_id = another))
+	WHERE EXISTS (SELECT * FROM relations AS r WHERE (ONE = ? AND another = c.user_id) AND (e.private = 0 OR e.user_id = ? OR e.user_id = another))
 	ORDER BY created_at DESC LIMIT 10`, user.ID, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
