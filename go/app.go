@@ -340,7 +340,8 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries ORDER BY created_at DESC LIMIT 1000`)
+	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries AS E 
+	WHERE EXISTS (SELECT another FROM relations AS R WHERE one = ? AND another = E.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -350,13 +351,7 @@ LIMIT 10`, user.ID)
 		var title string
 		var createdAt time.Time
 		checkErr(rows.Scan(&id, &userID, &private, &title, &createdAt))
-		if !isFriend(w, r, userID) {
-			continue
-		}
 		entriesOfFriends = append(entriesOfFriends, Entry{id, userID, private == 1, title, "", createdAt})
-		if len(entriesOfFriends) >= 10 {
-			break
-		}
 	}
 	rows.Close()
 
