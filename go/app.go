@@ -161,11 +161,11 @@ func getUserFromAccount(w http.ResponseWriter, name string) *User {
 func isFriend(w http.ResponseWriter, r *http.Request, anotherID int) bool {
 	session := getSession(w, r)
 	id := session.Values["user_id"]
-	row := db.QueryRow(`SELECT COUNT(one) AS cnt FROM relations WHERE (one = ? AND another = ?)`, id, anotherID)
-	cnt := new(int)
-	err := row.Scan(cnt)
+	row := db.QueryRow(`SELECT EXISTS(SELECT * FROM relations WHERE (one = ? AND another = ?))`, id, anotherID)
+	var exists int
+	err := row.Scan(&exists)
 	checkErr(err)
-	return *cnt > 0
+	return exists == 1
 }
 
 func isFriendAccount(w http.ResponseWriter, r *http.Request, name string) bool {
@@ -310,17 +310,17 @@ func GetIndex(w http.ResponseWriter, r *http.Request) {
 		checkErr(err)
 	}
 
-	rows, err := db.Query(`SELECT id, user_id, private, body, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`, user.ID)
+	rows, err := db.Query(`SELECT id, user_id, private, title, created_at FROM entries WHERE user_id = ? ORDER BY created_at LIMIT 5`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
 	entries := make([]Entry, 0, 5)
 	for rows.Next() {
 		var id, userID, private int
-		var body string
+		var title string
 		var createdAt time.Time
-		checkErr(rows.Scan(&id, &userID, &private, &body, &createdAt))
-		entries = append(entries, Entry{id, userID, private == 1, strings.SplitN(body, "\n", 2)[0], strings.SplitN(body, "\n", 2)[1], createdAt})
+		checkErr(rows.Scan(&id, &userID, &private, &title, &createdAt))
+		entries = append(entries, Entry{id, userID, private == 1, title, "", createdAt})
 	}
 	rows.Close()
 
@@ -341,20 +341,20 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT id, user_id, private, body, created_at FROM entries ORDER BY created_at DESC LIMIT 1000`)
+	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries ORDER BY created_at DESC LIMIT 1000`)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
 	entriesOfFriends := make([]Entry, 0, 10)
 	for rows.Next() {
 		var id, userID, private int
-		var body string
+		var title string
 		var createdAt time.Time
-		checkErr(rows.Scan(&id, &userID, &private, &body, &createdAt))
+		checkErr(rows.Scan(&id, &userID, &private, &title, &createdAt))
 		if !isFriend(w, r, userID) {
 			continue
 		}
-		entriesOfFriends = append(entriesOfFriends, Entry{id, userID, private == 1, strings.SplitN(body, "\n", 2)[0], strings.SplitN(body, "\n", 2)[1], createdAt})
+		entriesOfFriends = append(entriesOfFriends, Entry{id, userID, private == 1, title, "", createdAt})
 		if len(entriesOfFriends) >= 10 {
 			break
 		}
@@ -590,7 +590,7 @@ func PostEntry(w http.ResponseWriter, r *http.Request) {
 	} else {
 		private = 1
 	}
-	_, err := db.Exec(`INSERT INTO entries (user_id, private, body) VALUES (?,?,?)`, user.ID, private, title+"\n"+content)
+	_, err := db.Exec(`INSERT INTO entries (user_id, private, body, title) VALUES (?,?,?,?)`, user.ID, private, title+"\n"+content, title)
 	checkErr(err)
 	http.Redirect(w, r, "/diary/entries/"+user.AccountName, http.StatusSeeOther)
 }
