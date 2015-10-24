@@ -4,7 +4,7 @@ echo "dir: $dir"
 
 ssh_host="isucon5q-retry"
 
-rsync -avzc -chmod=u+rwx --delete --exclude-from=rsync-exclude-from ${dir}/ ${ssh_host}:webapp
+rsync -avzc --delete --exclude-from=rsync-exclude-from ${dir}/ ${ssh_host}:webapp
 
 ssh -t -t $ssh_host <<-EOS
   cd /home/isucon/webapp/go
@@ -20,7 +20,7 @@ ssh -t -t $ssh_host <<-EOS
   #sudo service nginx start
   ##sudo service mysql restart
 
-  msql -e 'show variables like "query_cache%";'
-  msql -e 'show variables like "thread_cache%";'
+  mycon -e 'show variables like "query_cache%";'
+  mycon -e 'show variables like "thread_cache%";'
   exit
 EOS
