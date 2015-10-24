@@ -340,8 +340,8 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries AS E 
-	WHERE EXISTS (SELECT another FROM relations AS R WHERE one = ? AND another = E.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
+	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries AS e 
+	WHERE EXISTS (SELECT another FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -355,7 +355,10 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT * FROM comments ORDER BY created_at DESC LIMIT 1000`)
+	rows, err = db.Query(`SELECT c.id, c.entry_id, c.user_id, c.comment, c.created_at FROM comments AS c 
+	LEFT JOIN entries AS e ON (c.entry_id = e.id)
+	WHERE EXISTS (SELECT * FROM relations AS r WHERE ONE = ? AND another = c.user_id AND e.private = 0 OR (e.user_id = ? OR e.user_id = another))
+	ORDER BY created_at DESC LIMIT 10`, user.ID, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
@@ -363,24 +366,7 @@ LIMIT 10`, user.ID)
 	for rows.Next() {
 		c := Comment{}
 		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt))
-		if !isFriend(w, r, c.UserID) {
-			continue
-		}
-		row := db.QueryRow(`SELECT id, user_id, private, body, created_at FROM entries WHERE id = ?`, c.EntryID)
-		var id, userID, private int
-		var body string
-		var createdAt time.Time
-		checkErr(row.Scan(&id, &userID, &private, &body, &createdAt))
-		entry := Entry{id, userID, private == 1, strings.SplitN(body, "\n", 2)[0], strings.SplitN(body, "\n", 2)[1], createdAt}
-		if entry.Private {
-			if !permitted(w, r, entry.UserID) {
-				continue
-			}
-		}
 		commentsOfFriends = append(commentsOfFriends, c)
-		if len(commentsOfFriends) >= 10 {
-			break
-		}
 	}
 	rows.Close()
 
