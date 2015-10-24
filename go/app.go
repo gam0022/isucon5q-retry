@@ -341,7 +341,7 @@ LIMIT 10`, user.ID)
 	rows.Close()
 
 	rows, err = db.Query(`SELECT id, user_id, private, title, created_at FROM entries AS e 
-	WHERE EXISTS (SELECT another FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
+	WHERE EXISTS (SELECT * FROM relations AS r WHERE one = ? AND another = e.user_id) ORDER BY created_at DESC LIMIT 10`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
