@@ -58,13 +58,8 @@ type Comment struct {
 }
 
 type Friend struct {
-	ID        int
-	CreatedAt time.Time
-}
-
-type Friend2 struct {
-	NickName string
 	AccountName string
+	NickName string
 	CreatedAt time.Time
 }
 
@@ -629,20 +624,20 @@ func GetFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := getCurrentUser(w, r)
-	rows, err := db.Query(`SELECT U.nick_name, U.account_name, R.created_at FROM relations AS R LEFT JOIN users AS U ON R.another = U.id WHERE one = ?`, user.ID)
+	rows, err := db.Query(`SELECT U.account_name, U.nick_name, R.created_at FROM relations AS R LEFT JOIN users AS U ON R.another = U.id WHERE one = ?`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-	friends := make([]Friend2, 0)
+	friends := make([]Friend, 0)
 	for rows.Next() {
 		var nichName string
 		var accountName string
 		var createdAt time.Time
-		checkErr(rows.Scan(&nichName, &accountName, &createdAt))
-		friends = append(friends, Friend2{ nichName, accountName, createdAt })
+		checkErr(rows.Scan(&accountName, &nichName, &createdAt))
+		friends = append(friends, Friend{ accountName, nichName, createdAt })
 	}
 	rows.Close()
-	render(w, r, http.StatusOK, "friends.html", struct{ Friends []Friend2 }{friends})
+	render(w, r, http.StatusOK, "friends.html", struct{ Friends []Friend }{friends})
 }
 
 func PostFriends(w http.ResponseWriter, r *http.Request) {
