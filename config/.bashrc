@@ -17,6 +17,9 @@ export PATH=/home/isucon/.local/scala/bin:$PATH
 
 alias ll='ls -al'
 
-export PATH=$HOME/webapp/bin:$PATH
+export REPO=$HOME/webapp
+
+export PATH=$REPO/bin:$PATH
 alias mycon='mysql -h localhost -P 3306 -u root isucon5q'
 alias mypro='myprofiler -host=localhost -user=root -limit=30 -dump=$HOME/logs/mysql/rawquery.sql.`date +%Y-%m-%d_%H-%M-%S`'
+alias summary='python $REPO/bin/summary_log.py $HOME/logs/nginx/`ls $HOME/logs/nginx | tail -1`'
