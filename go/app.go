@@ -155,7 +155,7 @@ func getUserFromAccount(w http.ResponseWriter, name string) *User {
 func isFriend(w http.ResponseWriter, r *http.Request, anotherID int) bool {
 	session := getSession(w, r)
 	id := session.Values["user_id"]
-	row := db.QueryRow(`SELECT COUNT(1) AS cnt FROM relations WHERE (one = ? AND another = ?) OR (one = ? AND another = ?)`, id, anotherID, anotherID, id)
+	row := db.QueryRow(`SELECT COUNT(one) AS cnt FROM relations WHERE (one = ? AND another = ?)`, id, anotherID)
 	cnt := new(int)
 	err := row.Scan(cnt)
 	checkErr(err)
