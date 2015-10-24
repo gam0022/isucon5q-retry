@@ -20,5 +20,7 @@ ssh -t -t $ssh_host <<-EOS
   #sudo service nginx start
   ##sudo service mysql restart
 
+  msql -e 'show variables like "query_cache%";'
+  msql -e 'show variables like "thread_cache%";'
   exit
 EOS
