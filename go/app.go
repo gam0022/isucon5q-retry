@@ -72,6 +72,20 @@ type CommentFrom struct {
 	FromNickName string
 }
 
+type CommentFromTo struct {
+	ID        int
+	EntryID   int
+	UserID    int
+	Comment   string
+	CreatedAt time.Time
+
+	FromAccountName string
+	FromNickName string
+
+	ToAccountName string
+	ToNickName string
+}
+
 type Comment struct {
 	ID        int
 	EntryID   int
@@ -379,17 +393,20 @@ LIMIT 10`, user.ID)
 	}
 	rows.Close()
 
-	rows, err = db.Query(`SELECT c.id, c.entry_id, c.user_id, c.comment, c.created_at FROM comments AS c 
+	rows, err = db.Query(`SELECT c.id, c.entry_id, c.user_id, c.comment, c.created_at, uf.account_name, uf.nick_name, ut.account_name, ut.nick_name
+	FROM comments AS c 
 	LEFT JOIN entries AS e ON (c.entry_id = e.id)
+	LEFT JOIN users AS uf ON (uf.id = c.user_id)
+	LEFT JOIN users AS ut ON (ut.id = e.user_id)
 	WHERE EXISTS (SELECT * FROM relations AS r WHERE (ONE = ? AND another = c.user_id) AND (e.private = 0 OR e.user_id = ? OR e.user_id = another))
 	ORDER BY created_at DESC LIMIT 10`, user.ID, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
-	commentsOfFriends := make([]Comment, 0, 10)
+	commentsOfFriends := make([]CommentFromTo, 0, 10)
 	for rows.Next() {
-		c := Comment{}
-		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt))
+		c := CommentFromTo{}
+		checkErr(rows.Scan(&c.ID, &c.EntryID, &c.UserID, &c.Comment, &c.CreatedAt, &c.FromAccountName, &c.FromNickName, &c.ToAccountName, &c.ToNickName))
 		commentsOfFriends = append(commentsOfFriends, c)
 	}
 	rows.Close()
@@ -418,7 +435,7 @@ LIMIT 10`, user.ID)
 		Entries           []Entry
 		CommentsForMe     []CommentFrom
 		EntriesOfFriends  []Entry2
-		CommentsOfFriends []Comment
+		CommentsOfFriends []CommentFromTo
 		FriendsCount      int
 		Footprints        []Footprint
 	}{
