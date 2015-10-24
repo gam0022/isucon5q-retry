@@ -20,4 +20,72 @@
 !includedir /etc/mysql/conf.d/
 !includedir /etc/mysql/mysql.conf.d/
 
+[client]
+default-character-set = utf8mb4
 
+
+[mysqld]
+# ディスクの同期を待たない。 ISUCON だと超重要。 2 でも可
+# 1はプロダクション用
+innodb_flush_log_at_trx_commit = 0
+innodb_doublewrite=0
+
+# シャットダウン時に InnoDB の内容をテーブルに書き出す.
+# シャットダウンが遅くなる代わりに起動が速くなる
+# そして innodb_log_file_size などを変更する場合は一度これを有効にした状態で
+# シャットダウンしておいたほうが良い。
+
+innodb_fast_shutdown=0
+
+# テーブル開いたり接続したりの高速化
+skip-name-resolve
+table_open_cache = 256
+max_connections = 256
+thread_cache_size = 256
+
+
+# クエリキャッシュ
+query_cache_size = 0
+query_cache_type = DEMAND
+# クエリキャッシュは update でテーブル単位で全消し食らうので、 update heavy な場合は使わない
+# read heavy でアプリ側で別のキャッシュを実装するのが面倒なときに有効にすると良い。
+# その場合の設定例:
+# query_cache_size = 32M
+# query_cache_type = ON / DEMAND
+
+
+# 搭載メモリと相談
+innodb_buffer_pool_size = 2GB
+
+
+# スロークエリログ. 遅いクエリの調査用
+slow_query_log = 1
+long_query_time = 1
+
+
+# ログバッファ = 128MB * 2
+# 足りないとトランザクションが遅くなる
+innodb_log_file_size = 128M
+innodb_log_files_in_group = 2
+
+
+# その他。初期状態で変な値が設定されてたら参考に。
+
+character-set-server = utf8mb4
+default-storage-engine=InnoDB
+
+sort_buffer_size = 1M
+read_buffer_size = 1M
+myisam_sort_buffer_size = 1M
+
+tmp_table_size = 64M
+max_heap_table_size = 64M
+
+innodb_strict_mode
+innodb_file_per_table
+innodb_additional_mem_pool_size = 20M
+innodb_log_buffer_size = 16M
+innodb_flush_method=O_DIRECT
+loose-innodb_large_prefix = 1
+loose-innodb_print_all_deadlocks = 1
+innodb_io_capacity = 200
