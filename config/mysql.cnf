@@ -89,3 +89,5 @@ innodb_flush_method=O_DIRECT
 loose-innodb_large_prefix = 1
 loose-innodb_print_all_deadlocks = 1
 innodb_io_capacity = 200
+
+innodb_file_format = Barracuda
