@@ -16,6 +16,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	// unix domain socket
+	"net"
+	"syscall"
 )
 
 var (
@@ -762,7 +766,10 @@ func main() {
 	r.HandleFunc("/initialize", myHandler(GetInitialize))
 	r.HandleFunc("/", myHandler(GetIndex))
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir("../static")))
-	log.Fatal(http.ListenAndServe(":8080", r))
+	//log.Fatal(http.ListenAndServe(":8080", r))
+	listen,_ := net.Listen("unix", "/run/isuxi.go.sock")
+	syscall.Chmod("/run/isuxi.go.sock", 0777)
+	log.Fatal(http.Serve(listen, r))
 }
 
 func checkErr(err error) {

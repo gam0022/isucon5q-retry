@@ -10,16 +10,16 @@ ssh -t -t $ssh_host <<-EOS
   cd /home/isucon/webapp/go
   go build -o app
 
-  sudo service nginx restart
-  sudo systemctl restart isuxi.go
+  #sudo service nginx restart
+  #sudo systemctl restart isuxi.go
 
-  #sudo service nginx stop
-  #sudo systemctl stop isuxi.go
-  #sudo rm -f /run/sock-shared/isuxi.go.sock
-  #sudo systemctl start isuxi.go
-  #sudo chmod 777 /run/sock-shared/isuxi.go.sock
-  #sudo service nginx start
-  ##sudo service mysql restart
+  sudo service nginx stop
+  sudo systemctl stop isuxi.go
+  sudo rm -f /run/isuxi.go.sock
+  sudo systemctl start isuxi.go
+  sudo chmod 777 /run/isuxi.go.sock
+  sudo service nginx start
+  #sudo service mysql restart
 
   mycon -e 'show variables like "query_cache%";'
   mycon -e 'show variables like "thread_cache%";'
