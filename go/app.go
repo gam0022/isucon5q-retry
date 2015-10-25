@@ -710,14 +710,14 @@ func main() {
 	if host == "" {
 		host = "localhost"
 	}
-	portstr := os.Getenv("ISUCON5_DB_PORT")
-	if portstr == "" {
-		portstr = "3306"
-	}
-	port, err := strconv.Atoi(portstr)
-	if err != nil {
-		log.Fatalf("Failed to read DB port number from an environment variable ISUCON5_DB_PORT.\nError: %s", err.Error())
-	}
+	//portstr := os.Getenv("ISUCON5_DB_PORT")
+	//if portstr == "" {
+	//	portstr = "3306"
+	//}
+	//port, err := strconv.Atoi(portstr)
+	//if err != nil {
+	//	log.Fatalf("Failed to read DB port number from an environment variable ISUCON5_DB_PORT.\nError: %s", err.Error())
+	//}
 	user := os.Getenv("ISUCON5_DB_USER")
 	if user == "" {
 		user = "root"
@@ -732,7 +732,9 @@ func main() {
 		ssecret = "beermoris"
 	}
 
-	db, err = sql.Open("mysql", user+":"+password+"@tcp("+host+":"+strconv.Itoa(port)+")/"+dbname+"?loc=Local&parseTime=true")
+	var err error
+	// db, err = sql.Open("mysql", user+":"+password+"@tcp("+host+":"+strconv.Itoa(port)+")/"+dbname+"?loc=Local&parseTime=true")
+	db, err = sql.Open("mysql", user+":"+password+"@unix(/var/run/mysqld/mysqld.sock)/"+dbname+"?loc=Local&parseTime=true")
 	if err != nil {
 		log.Fatalf("Failed to connect to DB: %s.", err.Error())
 	}
