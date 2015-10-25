@@ -90,4 +90,11 @@ loose-innodb_large_prefix = 1
 loose-innodb_print_all_deadlocks = 1
 innodb_io_capacity = 200
 
+# 圧縮テーブル
+# http://nippondanji.blogspot.jp/2010/03/innodb-plugin.html
 innodb_file_format = Barracuda
+
+# バッファプールの内容をファイルに書き出す
+# http://yoku0825.blogspot.jp/2012/08/innodb-buffer-pool-dump.html
+innodb_buffer_pool_dump_at_shutdown = 1
+innodb_buffer_pool_load_at_startup = 1
