@@ -15,6 +15,9 @@ export GOROOT=/home/isucon/.local/go
 export GOPATH=/home/isucon/webapp/go
 export PATH=/home/isucon/.local/scala/bin:$PATH
 
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 alias ll='ls -al'
 
 export REPO=$HOME/webapp
