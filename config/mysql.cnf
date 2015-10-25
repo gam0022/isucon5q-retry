@@ -55,7 +55,7 @@ query_cache_type = DEMAND
 
 
 # 搭載メモリと相談
-innodb_buffer_pool_size = 2GB
+innodb_buffer_pool_size = 3GB
 
 
 # スロークエリログ. 遅いクエリの調査用
