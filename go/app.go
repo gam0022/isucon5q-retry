@@ -668,7 +668,7 @@ func GetFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := getCurrentUser(w, r)
-	rows, err := db.Query(`SELECT U.account_name, U.nick_name, R.created_at FROM relations AS R LEFT JOIN users AS U ON R.another = U.id WHERE one = ?`, user.ID)
+	rows, err := db.Query(`SELECT u.account_name, u.nick_name, r.created_at FROM relations AS r LEFT JOIN users AS u ON (r.another = u.id) WHERE one = ?`, user.ID)
 	if err != sql.ErrNoRows {
 		checkErr(err)
 	}
